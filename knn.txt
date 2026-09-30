@@ -1,0 +1,106 @@
+import pandas as pd
+import numpy as np
+
+# -----------------------------------------
+# Read CSV file
+# -----------------------------------------
+
+data = pd.read_csv("data.csv")
+
+# Input features
+X = data[["X", "Y"]].values
+
+# Labels
+labels = data["Label"].values
+
+# -----------------------------------------
+# Test Point
+# -----------------------------------------
+
+test_point = np.array([4.2, 3.1])
+
+# Number of nearest neighbours
+k = 3
+
+
+# -----------------------------------------
+# Euclidean Distance Function
+#
+# d = sqrt((x1-x2)^2 + (y1-y2)^2)
+# -----------------------------------------
+
+def euclidean_distance(point1, point2):
+
+    return np.sqrt(
+        (point1[0] - point2[0]) ** 2 +
+        (point1[1] - point2[1]) ** 2
+    )
+
+
+# -----------------------------------------
+# Calculate distance from test point
+# to every training point
+# -----------------------------------------
+
+distances = []
+
+for i in range(len(X)):
+
+    d = euclidean_distance(
+        test_point,
+        X[i]
+    )
+
+    distances.append(d)
+
+
+# -----------------------------------------
+# Add distances to dataframe
+# -----------------------------------------
+
+data["Distance"] = distances
+
+
+# -----------------------------------------
+# Sort by distance
+# -----------------------------------------
+
+data = data.sort_values(
+    by="Distance"
+)
+
+
+# -----------------------------------------
+# Select K nearest neighbours
+# -----------------------------------------
+
+nearest_neighbors = data.head(k)
+
+
+# -----------------------------------------
+# Majority Voting
+# -----------------------------------------
+
+vote_count = nearest_neighbors["Label"].value_counts()
+
+predicted_class = vote_count.idxmax()
+
+
+# -----------------------------------------
+# Display Results
+# -----------------------------------------
+
+print("Test Point:", test_point)
+print("K =", k)
+
+print("\nK Nearest Neighbors:")
+print(
+    nearest_neighbors[
+        ["ID", "X", "Y", "Label", "Distance"]
+    ]
+)
+
+print("\nVotes:")
+print(vote_count)
+
+print("\nPredicted Class:", predicted_class)
