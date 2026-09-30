@@ -1,0 +1,191 @@
+import pandas as pd
+import numpy as np
+
+# ---------------------------------------------------
+# STEP 1: Read CSV file
+# ---------------------------------------------------
+
+data = pd.read_csv("data.csv")
+
+X = data["Marks"].values
+y = data["y"].values
+
+
+# ---------------------------------------------------
+# Convert y from {-1, +1} to {0, 1}
+#
+# -1 -> 0  (Fail)
+# +1 -> 1  (Pass)
+#
+# Formula:
+# y01 = (y + 1) / 2
+# ---------------------------------------------------
+
+y01 = (y + 1) / 2
+
+
+# ---------------------------------------------------
+# STEP 2: Sigmoid Function
+#
+# Formula:
+#
+# sigmoid(z) = 1 / (1 + e^(-z))
+# ---------------------------------------------------
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+# ---------------------------------------------------
+# STEP 3: Hypothesis Function
+#
+# Formula:
+#
+# z = wx + b
+#
+# h(x) = sigmoid(wx + b)
+# ---------------------------------------------------
+
+def hypothesis(X, w, b):
+    z = w * X + b
+    return sigmoid(z)
+
+
+# ---------------------------------------------------
+# STEP 4: Cost Function
+#
+# Formula:
+#
+# J(w,b) = -(1/n) Σ[
+#           y log(h(x))
+#           + (1-y) log(1-h(x))
+#          ]
+# ---------------------------------------------------
+
+def cost_function(X, y, w, b):
+
+    h = hypothesis(X, w, b)
+
+    # Avoid log(0)
+    h = np.clip(h, 1e-10, 1 - 1e-10)
+
+    cost = -np.mean(
+        y * np.log(h) +
+        (1 - y) * np.log(1 - h)
+    )
+
+    return cost
+
+
+# ---------------------------------------------------
+# STEP 5: Gradient Descent
+#
+# Gradient formulas:
+#
+# dw = (1/n) Σ[(h(x) - y) * x]
+#
+# db = (1/n) Σ[h(x) - y]
+#
+# Weight update:
+#
+# w = w - η * dw
+#
+# Bias update:
+#
+# b = b - η * db
+# ---------------------------------------------------
+
+def gradient_descent(X, y, w, b, learning_rate, iterations):
+
+    n = len(X)
+
+    for i in range(iterations):
+
+        # Calculate hypothesis
+        h = hypothesis(X, w, b)
+
+        # Calculate gradients
+        dw = np.sum((h - y) * X) / n
+        db = np.sum(h - y) / n
+
+        # Update weight
+        w = w - learning_rate * dw
+
+        # Update bias
+        b = b - learning_rate * db
+
+    return w, b
+
+
+# ---------------------------------------------------
+# STEP 6: Logistic Regression Function
+# ---------------------------------------------------
+
+def logistic_regression(X, y):
+
+    # Initial parameters
+    w = 0
+    b = 0
+
+    # Learning rate
+    learning_rate = 0.01
+
+    # Number of iterations
+    iterations = 100000
+
+    # Apply Gradient Descent
+    w, b = gradient_descent(
+        X, y, w, b,
+        learning_rate,
+        iterations
+    )
+
+    return w, b
+
+
+# ---------------------------------------------------
+# STEP 7: Calculate Logistic Regression Parameters
+# ---------------------------------------------------
+
+w, b = logistic_regression(X, y01)
+
+
+# ---------------------------------------------------
+# STEP 8: Predict for Marks = 20
+#
+# z = wx + b
+# probability = sigmoid(z)
+#
+# If probability >= 0.5 -> Pass (+1)
+# Otherwise -> Fail (-1)
+# ---------------------------------------------------
+
+marks = 20
+
+probability = hypothesis(
+    np.array([marks]), w, b
+)[0]
+
+if probability >= 0.5:
+    prediction = 1
+    result = "PASS"
+else:
+    prediction = -1
+    result = "FAIL"
+
+
+# ---------------------------------------------------
+# STEP 9: Display Results
+# ---------------------------------------------------
+
+print("Logistic Regression Parameters")
+print("Weight (w):", w)
+print("Bias (b):", b)
+
+print("\nFor Marks =", marks)
+
+print("Probability:", probability)
+print("Predicted class:", prediction)
+print("Result:", result)
+
+print("\nCost:", cost_function(X, y01, w, b))

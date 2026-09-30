@@ -1,0 +1,117 @@
+import pandas as pd
+import numpy as np
+
+# -----------------------------------------
+# Read CSV file
+# -----------------------------------------
+
+data = pd.read_csv("data.csv")
+
+points = data["Point"].values
+X = data[["X", "Y"]].values.astype(float)
+
+# Number of clusters
+K = 3
+
+# -----------------------------------------
+# Initial Centroids
+# Taking A, B and C as initial centroids
+# -----------------------------------------
+
+centroids = np.array([
+    [2, 10],   # A
+    [2, 5],    # B
+    [8, 4]     # C
+], dtype=float)
+
+
+# -----------------------------------------
+# Euclidean Distance Formula
+#
+# d = sqrt((x1-x2)^2 + (y1-y2)^2)
+# -----------------------------------------
+
+def euclidean_distance(p1, p2):
+    return np.sqrt(np.sum((p1 - p2) ** 2))
+
+
+# -----------------------------------------
+# K-Means Algorithm
+# -----------------------------------------
+
+while True:
+
+    # Store cluster assignments
+    clusters = []
+
+    # -------------------------------------
+    # Step 1: Assign each point to nearest
+    # centroid
+    # -------------------------------------
+
+    for point in X:
+
+        distances = []
+
+        for centroid in centroids:
+            distance = euclidean_distance(point, centroid)
+            distances.append(distance)
+
+        # Choose nearest centroid
+        cluster = np.argmin(distances)
+
+        clusters.append(cluster)
+
+    clusters = np.array(clusters)
+
+    # -------------------------------------
+    # Step 2: Calculate new centroids
+    #
+    # New centroid =
+    # Mean of all points in the cluster
+    # -------------------------------------
+
+    new_centroids = []
+
+    for k in range(K):
+
+        cluster_points = X[clusters == k]
+
+        if len(cluster_points) > 0:
+            new_centroid = np.mean(cluster_points, axis=0)
+        else:
+            new_centroid = centroids[k]
+
+        new_centroids.append(new_centroid)
+
+    new_centroids = np.array(new_centroids)
+
+    # -------------------------------------
+    # Step 3: Check convergence
+    # -------------------------------------
+
+    if np.allclose(centroids, new_centroids):
+        break
+
+    centroids = new_centroids
+
+
+# -----------------------------------------
+# Display Results
+# -----------------------------------------
+
+print("Final Centroids:")
+for i in range(K):
+    print(
+        "Cluster", i + 1,
+        ":", centroids[i]
+    )
+
+print("\nCluster Assignment:")
+
+for i in range(len(X)):
+    print(
+        points[i],
+        "-> Cluster",
+        clusters[i] + 1
+    )

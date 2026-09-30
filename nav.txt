@@ -1,0 +1,178 @@
+import pandas as pd
+import numpy as np
+
+# --------------------------------------------------
+# STEP 1: Read CSV file
+# --------------------------------------------------
+
+data = pd.read_csv("data.csv")
+
+features = ["Word_Free", "Word_Win", "Length", "Links"]
+
+X = data[features]
+y = data["Class"]
+
+
+# --------------------------------------------------
+# STEP 2: Calculate Prior Probability
+#
+# Formula:
+#
+# P(Class) = Number of samples in Class
+#            ----------------------------
+#                 Total samples
+# --------------------------------------------------
+
+classes = y.unique()
+
+priors = {}
+
+for c in classes:
+    priors[c] = np.sum(y == c) / len(y)
+
+
+# --------------------------------------------------
+# STEP 3: Calculate Mean and Variance
+#
+# Mean:
+#
+# μ = Σx / n
+#
+# Variance:
+#
+# σ² = Σ(x - μ)² / n
+# --------------------------------------------------
+
+mean = {}
+variance = {}
+
+for c in classes:
+
+    mean[c] = {}
+    variance[c] = {}
+
+    class_data = X[y == c]
+
+    for feature in features:
+
+        mean[c][feature] = np.mean(class_data[feature])
+
+        variance[c][feature] = np.var(
+            class_data[feature]
+        )
+
+
+# --------------------------------------------------
+# STEP 4: Gaussian Probability Density Function
+#
+# Formula:
+#
+# P(x|C) =
+#
+# 1                    -(x-μ)²
+# ------------------ * --------
+# √(2πσ²)                2σ²
+#
+# --------------------------------------------------
+
+def gaussian_probability(x, mean, variance):
+
+    # Avoid division by zero
+    if variance == 0:
+        variance = 1e-10
+
+    exponent = np.exp(
+        -((x - mean) ** 2) /
+        (2 * variance)
+    )
+
+    probability = (
+        1 / np.sqrt(2 * np.pi * variance)
+    ) * exponent
+
+    return probability
+
+
+# --------------------------------------------------
+# STEP 5: Naïve Bayes Prediction
+#
+# Formula:
+#
+# P(C|X) ∝ P(C) ×
+#          P(x1|C) × P(x2|C) × ...
+#
+# --------------------------------------------------
+
+def predict(sample):
+
+    probabilities = {}
+
+    for c in classes:
+
+        # Start with prior probability
+        probability = priors[c]
+
+        for feature in features:
+
+            x = sample[feature]
+
+            mu = mean[c][feature]
+
+            var = variance[c][feature]
+
+            probability *= gaussian_probability(
+                x, mu, var
+            )
+
+        probabilities[c] = probability
+
+    # Select class with highest probability
+    prediction = max(
+        probabilities,
+        key=probabilities.get
+    )
+
+    return prediction, probabilities
+
+
+# --------------------------------------------------
+# STEP 6: Test a New Email
+# --------------------------------------------------
+
+# Example email:
+# Word_Free = 2
+# Word_Win  = 1
+# Length    = 150
+# Links     = 4
+
+new_email = {
+    "Word_Free": 2,
+    "Word_Win": 1,
+    "Length": 150,
+    "Links": 4
+}
+
+
+prediction, probabilities = predict(new_email)
+
+
+# --------------------------------------------------
+# STEP 7: Display Results
+# --------------------------------------------------
+
+print("Prior Probabilities:")
+for c in classes:
+    print(c, "=", priors[c])
+
+print("\nMean:")
+print(pd.DataFrame(mean))
+
+print("\nVariance:")
+print(pd.DataFrame(variance))
+
+print("\nProbabilities for New Email:")
+
+for c in classes:
+    print(c, "=", probabilities[c])
+
+print("\nPredicted Class:", prediction)

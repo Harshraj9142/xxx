@@ -1,0 +1,135 @@
+import numpy as np
+
+# -----------------------------------------
+# AND Gate Dataset
+# -----------------------------------------
+
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+# Expected output of AND gate
+y = np.array([0, 0, 0, 1])
+
+
+# -----------------------------------------
+# Perceptron Training Function
+# -----------------------------------------
+
+def train_perceptron(X, y, learning_rate=1):
+
+    # Initial weights and bias
+    w = np.array([0.0, 0.0])
+    b = 0.0
+
+    epoch = 0
+
+    while True:
+
+        errors = 0
+        epoch += 1
+
+        for i in range(len(X)):
+
+            # --------------------------------
+            # Formula:
+            # z = w1*x1 + w2*x2 + b
+            # --------------------------------
+
+            z = np.dot(X[i], w) + b
+
+            # Step activation function
+            if z >= 0:
+                prediction = 1
+            else:
+                prediction = 0
+
+            # --------------------------------
+            # Perceptron Learning Rule:
+            #
+            # w_new = w_old + η(y - ŷ)x
+            #
+            # b_new = b_old + η(y - ŷ)
+            # --------------------------------
+
+            error = y[i] - prediction
+
+            if error != 0:
+
+                w = w + learning_rate * error * X[i]
+
+                b = b + learning_rate * error
+
+                errors += 1
+
+        # Stop when no errors occur
+        if errors == 0:
+            break
+
+    return w, b, epoch
+
+
+# -----------------------------------------
+# Perceptron Testing Function
+# -----------------------------------------
+
+def test_perceptron(X, w, b):
+
+    predictions = []
+
+    for x in X:
+
+        # Formula:
+        # z = w1*x1 + w2*x2 + b
+
+        z = np.dot(x, w) + b
+
+        # Step activation function
+        if z >= 0:
+            prediction = 1
+        else:
+            prediction = 0
+
+        predictions.append(prediction)
+
+    return predictions
+
+
+# -----------------------------------------
+# Train the Perceptron
+# -----------------------------------------
+
+w, b, epochs = train_perceptron(X, y)
+
+
+# -----------------------------------------
+# Test the Perceptron
+# -----------------------------------------
+
+predictions = test_perceptron(X, w, b)
+
+
+# -----------------------------------------
+# Display Results
+# -----------------------------------------
+
+print("Final Weights:", w)
+print("Final Bias:", b)
+print("Number of Epochs:", epochs)
+
+print("\nAND Gate Results:")
+print("X1  X2  Expected  Predicted")
+
+for i in range(len(X)):
+    print(
+        X[i][0],
+        " ",
+        X[i][1],
+        "    ",
+        y[i],
+        "        ",
+        predictions[i]
+    )

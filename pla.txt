@@ -1,0 +1,69 @@
+import pandas as pd
+import numpy as np
+
+# Read dataset from CSV
+data = pd.read_csv("data.csv")
+
+# Input features
+X = data[["X1", "X2"]].values
+
+# Target values
+y = data["y"].values
+
+# Initial weights
+w = np.array([0, 0])
+
+# Initial bias
+b = 0
+
+# Learning rate
+eta = 1
+
+epoch = 0
+
+while True:
+    epoch += 1
+    errors = 0
+
+    for i in range(len(X)):
+
+        # ---------------------------------------
+        # Mathematical Formula:
+        # z = w1*x1 + w2*x2 + b
+        # ---------------------------------------
+        z = np.dot(X[i], w) + b
+
+        # ---------------------------------------
+        # Prediction:
+        # y_hat = +1, if z >= 0
+        # y_hat = -1, if z < 0
+        # ---------------------------------------
+        if z >= 0:
+            prediction = 1
+        else:
+            prediction = -1
+
+        # ---------------------------------------
+        # If prediction is wrong:
+        #
+        # w_new = w_old + eta * y * X
+        # b_new = b_old + eta * y
+        # ---------------------------------------
+        if prediction != y[i]:
+
+            w = w + eta * y[i] * X[i]
+
+            b = b + eta * y[i]
+
+            errors += 1
+
+    # ---------------------------------------
+    # If there are no errors, PLA converges
+    # ---------------------------------------
+    if errors == 0:
+        break
+
+
+print("Converged after", epoch, "epochs")
+print("Final weight vector:", w)
+print("Final bias:", b)

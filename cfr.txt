@@ -1,0 +1,141 @@
+import numpy as np
+
+# ------------------------------------------------
+# STEP 1: Generate dataset of 1000 values
+#
+# 900 zeros and 100 ones
+# ------------------------------------------------
+
+np.random.seed(42)
+
+y_true = np.array([0] * 900 + [1] * 100)
+y_pred = np.array([0] * 900 + [1] * 100)
+
+# Shuffle both arrays randomly
+np.random.shuffle(y_true)
+np.random.shuffle(y_pred)
+
+
+# ------------------------------------------------
+# STEP 2: Calculate Confusion Matrix
+# ------------------------------------------------
+
+TP = 0
+TN = 0
+FP = 0
+FN = 0
+
+for i in range(1000):
+
+    if y_true[i] == 1 and y_pred[i] == 1:
+        TP += 1
+
+    elif y_true[i] == 0 and y_pred[i] == 0:
+        TN += 1
+
+    elif y_true[i] == 0 and y_pred[i] == 1:
+        FP += 1
+
+    elif y_true[i] == 1 and y_pred[i] == 0:
+        FN += 1
+
+
+print("Confusion Matrix:")
+print("[[TN, FP]")
+print(" [FN, TP]]")
+
+print("\n[[", TN, ",", FP, "]")
+print(" [", FN, ",", TP, "]]")
+
+
+# ------------------------------------------------
+# STEP 3: Decide Precision or Recall
+#
+# If FP > FN:
+#     Precision is more important
+#
+# If FN > FP:
+#     Recall is more important
+#
+# If FP == FN:
+#     Both are equally important
+# ------------------------------------------------
+
+if FP > FN:
+    print("\nFP is higher than FN.")
+    print("Therefore, Precision is more important.")
+
+elif FN > FP:
+    print("\nFN is higher than FP.")
+    print("Therefore, Recall is more important.")
+
+else:
+    print("\nFP and FN are equal.")
+    print("Precision and Recall are equally important.")
+
+
+# ------------------------------------------------
+# STEP 4: Randomly assign priority to FP and FN
+#
+# beta > 1  -> Recall has higher priority
+# beta < 1  -> Precision has higher priority
+# beta = 1  -> Equal priority
+# ------------------------------------------------
+
+priority = np.random.choice(["FP", "FN"])
+
+if priority == "FN":
+    beta = 2
+    print("\nPriority assigned to: FN")
+    print("Recall has higher priority.")
+    print("Beta =", beta)
+
+else:
+    beta = 0.5
+    print("\nPriority assigned to: FP")
+    print("Precision has higher priority.")
+    print("Beta =", beta)
+
+
+# ------------------------------------------------
+# STEP 5: Calculate Precision and Recall
+#
+# Precision = TP / (TP + FP)
+#
+# Recall = TP / (TP + FN)
+# ------------------------------------------------
+
+if TP + FP != 0:
+    precision = TP / (TP + FP)
+else:
+    precision = 0
+
+if TP + FN != 0:
+    recall = TP / (TP + FN)
+else:
+    recall = 0
+
+
+# ------------------------------------------------
+# STEP 6: Calculate F-beta Score
+#
+# Fβ = (1 + β²) × Precision × Recall
+#      --------------------------------
+#      (β² × Precision) + Recall
+# ------------------------------------------------
+
+f_beta = (
+    (1 + beta ** 2) * precision * recall
+) / (
+    (beta ** 2 * precision) + recall
+)
+
+
+# ------------------------------------------------
+# STEP 7: Display Results
+# ------------------------------------------------
+
+print("\nPrecision =", precision)
+print("Recall    =", recall)
+
+print("F-beta Score =", f_beta)
